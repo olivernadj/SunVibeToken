@@ -243,10 +243,17 @@ contract SunVibeToken is ERC20Interface, Owned, TradingSunVibeTokenI {
   }
 
   /**
-   * @dev process instrument becomes due and the insterest is repaid to the investor
+   * @dev process instrument what becomes due and the insterest is repaid to the investor
    */
   function dueDateProcess() public payable {
-
+    uint earning = msg.value.mul(etherPrice); // total token earning
+    uint dividend = earning.div(_totalSupply); //dividend
+    for (uint i=0; i<balanceDict.length; i++) {
+      if (balanceDict[i] != 0) {
+        balances[balanceDict[i]].add(dividend.mul(balances[balanceDict[i]]));
+      }
+    }
+    addAsk(etherPrice);
   }
 
   /**
@@ -355,7 +362,7 @@ contract SunVibeToken is ERC20Interface, Owned, TradingSunVibeTokenI {
   /**
    * @dev Adds an ask record to list by asking Token for ETH
    */
-  function addAsk(uint _unitPrice) payable external {
+  function addAsk(uint _unitPrice) payable public {
     require(msg.value > 0 && _unitPrice > 0, "ETH and unitPrice must be more than zero!");
     // add the ask to the ask dictionary, vacant indexes will be reused
     bool foundIndex = false;
