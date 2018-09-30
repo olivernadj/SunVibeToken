@@ -9,7 +9,13 @@ Accelerate the local economy by highly scalable business plan and open the door 
 
 
 ## Demo
+Investor and Vendor View
+
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/9q94dh75oZk/0.jpg)](https://youtu.be/9q94dh75oZk)
+
+Host View
+
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/dTqJGfAhDas/0.jpg)](https://youtu.be/dTqJGfAhDas)
 
 ## Repositories
 
