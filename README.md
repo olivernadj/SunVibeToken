@@ -27,7 +27,7 @@ Host View
  - Front-End: http://sunvibe.surge.sh/
  - Dashboard: https://sunvibe-dashboard.herokuapp.com/dashboard
  - Host Interface: https://sunvibe-dashboard.herokuapp.com/
- - Contract: https://ropsten.etherscan.io/address/0xe8861b52eee15528ef56a9074b410ac3c301c09c
+ - Contract: https://ropsten.etherscan.io/address/0xcdfb4ad55e669dfddb00141ffac1b988265e6c22
 
 ## Install Smart Contract
 
