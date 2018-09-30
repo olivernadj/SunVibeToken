@@ -8,6 +8,9 @@ The house owners can get instant earning by lending their rooftop to host solar 
 Accelerate the local economy by highly scalable business plan and open the door for 4.0 era.
 
 
+## Demo
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/9q94dh75oZk/0.jpg)](https://youtu.be/9q94dh75oZk)
+
 ## Repositories
 
  - Front-End: https://github.com/harley/sunvibe-frontend/
