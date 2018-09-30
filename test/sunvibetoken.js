@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { assertRevert } = require('./helpers/assertRevert');
 const expectEvent = require('./helpers/expectEvent');
 
@@ -14,7 +15,7 @@ contract('SunVibeToken', function ([_, owner, recipient, anotherAccount]) {
 
   beforeEach(async function () {
     this.token = await SunVibeToken.new();
-    var result = await web3.eth.sendTransaction({from: owner, to: this.token.address, value: 1e+17 });
+    var result = await web3.eth.sendTransaction({from: owner, to: this.token.address, value: 1 });
   });
 
   describe('total supply', function () {
@@ -62,11 +63,10 @@ contract('SunVibeToken', function ([_, owner, recipient, anotherAccount]) {
 
         it('emits a transfer event', async function () {
           const { logs } = await this.token.transfer(to, amount, { from: owner });
-
           expectEvent.inLogs(logs, 'Transfer', {
             from: owner,
             to: to,
-            value: amount,
+            tokens: amount,
           });
         });
       });
@@ -92,9 +92,9 @@ contract('SunVibeToken', function ([_, owner, recipient, anotherAccount]) {
           const { logs } = await this.token.approve(spender, amount, { from: owner });
 
           expectEvent.inLogs(logs, 'Approval', {
-            owner: owner,
+            tokenOwner: owner,
             spender: spender,
-            value: amount,
+            tokens: amount,
           });
         });
 
@@ -126,9 +126,9 @@ contract('SunVibeToken', function ([_, owner, recipient, anotherAccount]) {
           const { logs } = await this.token.approve(spender, amount, { from: owner });
 
           expectEvent.inLogs(logs, 'Approval', {
-            owner: owner,
+            tokenOwner: owner,
             spender: spender,
-            value: amount,
+            tokens: amount,
           });
         });
 
@@ -198,7 +198,7 @@ contract('SunVibeToken', function ([_, owner, recipient, anotherAccount]) {
             expectEvent.inLogs(logs, 'Transfer', {
               from: owner,
               to: to,
-              value: amount,
+              tokens: amount,
             });
           });
         });
@@ -214,7 +214,7 @@ contract('SunVibeToken', function ([_, owner, recipient, anotherAccount]) {
 
       describe('when the spender does not have enough approved balance', function () {
         beforeEach(async function () {
-          await this.token.approve(spender, 99, { from: owner });
+          await this.token.approve(spender, 74, { from: owner });
         });
 
         describe('when the owner has enough balance', function () {
@@ -249,153 +249,10 @@ contract('SunVibeToken', function ([_, owner, recipient, anotherAccount]) {
     });
   });
 
-  describe('decrease allowance', function () {
-    describe('when the spender is not the zero address', function () {
-      const spender = recipient;
 
-      function shouldDecreaseApproval (amount) {
-        describe('when there was no approved amount before', function () {
-          it('reverts', async function () {
-            await assertRevert(this.token.decreaseAllowance(spender, amount, { from: owner }));
-          });
-        });
-
-        describe('when the spender had an approved amount', function () {
-          const approvedAmount = amount;
-
-          beforeEach(async function () {
-            ({ logs: this.logs } = await this.token.approve(spender, approvedAmount, { from: owner }));
-          });
-
-          it('emits an approval event', async function () {
-            const { logs } = await this.token.decreaseAllowance(spender, approvedAmount, { from: owner });
-
-            expectEvent.inLogs(logs, 'Approval', {
-              owner: owner,
-              spender: spender,
-              value: 0,
-            });
-          });
-
-          it('decreases the spender allowance subtracting the requested amount', async function () {
-            await this.token.decreaseAllowance(spender, approvedAmount - 1, { from: owner });
-
-            (await this.token.allowance(owner, spender)).should.be.bignumber.equal(1);
-          });
-
-          it('sets the allowance to zero when all allowance is removed', async function () {
-            await this.token.decreaseAllowance(spender, approvedAmount, { from: owner });
-            (await this.token.allowance(owner, spender)).should.be.bignumber.equal(0);
-          });
-
-          it('reverts when more than the full allowance is removed', async function () {
-            await assertRevert(this.token.decreaseAllowance(spender, approvedAmount + 1, { from: owner }));
-          });
-        });
-      }
-
-      describe('when the sender has enough balance', function () {
-        const amount = 75;
-
-        shouldDecreaseApproval(amount);
-      });
-
-      describe('when the sender does not have enough balance', function () {
-        const amount = 76;
-
-        shouldDecreaseApproval(amount);
-      });
-    });
-
-    describe('when the spender is the zero address', function () {
-      const amount = 75;
-      const spender = ZERO_ADDRESS;
-
-      it('reverts', async function () {
-        await assertRevert(this.token.decreaseAllowance(spender, amount, { from: owner }));
-      });
-    });
-  });
-
-  describe('increase allowance', function () {
-    const amount = 75;
-
-    describe('when the spender is not the zero address', function () {
-      const spender = recipient;
-
-      describe('when the sender has enough balance', function () {
-        it('emits an approval event', async function () {
-          const { logs } = await this.token.increaseAllowance(spender, amount, { from: owner });
-
-          expectEvent.inLogs(logs, 'Approval', {
-            owner: owner,
-            spender: spender,
-            value: amount,
-          });
-        });
-
-        describe('when there was no approved amount before', function () {
-          it('approves the requested amount', async function () {
-            await this.token.increaseAllowance(spender, amount, { from: owner });
-
-            (await this.token.allowance(owner, spender)).should.be.bignumber.equal(amount);
-          });
-        });
-
-        describe('when the spender had an approved amount', function () {
-          beforeEach(async function () {
-            await this.token.approve(spender, 1, { from: owner });
-          });
-
-          it('increases the spender allowance adding the requested amount', async function () {
-            await this.token.increaseAllowance(spender, amount, { from: owner });
-
-            (await this.token.allowance(owner, spender)).should.be.bignumber.equal(amount + 1);
-          });
-        });
-      });
-
-      describe('when the sender does not have enough balance', function () {
-        const amount = 76;
-
-        it('emits an approval event', async function () {
-          const { logs } = await this.token.increaseAllowance(spender, amount, { from: owner });
-
-          expectEvent.inLogs(logs, 'Approval', {
-            owner: owner,
-            spender: spender,
-            value: amount,
-          });
-        });
-
-        describe('when there was no approved amount before', function () {
-          it('approves the requested amount', async function () {
-            await this.token.increaseAllowance(spender, amount, { from: owner });
-
-            (await this.token.allowance(owner, spender)).should.be.bignumber.equal(amount);
-          });
-        });
-
-        describe('when the spender had an approved amount', function () {
-          beforeEach(async function () {
-            await this.token.approve(spender, 1, { from: owner });
-          });
-
-          it('increases the spender allowance adding the requested amount', async function () {
-            await this.token.increaseAllowance(spender, amount, { from: owner });
-
-            (await this.token.allowance(owner, spender)).should.be.bignumber.equal(amount + 1);
-          });
-        });
-      });
-    });
-
-    describe('when the spender is the zero address', function () {
-      const spender = ZERO_ADDRESS;
-
-      it('reverts', async function () {
-        await assertRevert(this.token.increaseAllowance(spender, amount, { from: owner }));
-      });
+  it('Save address to ./src/SunVibeToken.address', async function () {
+    fs.writeFile("./src/SunVibeToken.address", this.token.address, function(err) {
+      assert.equal(err, null, 'The file was not saved.');
     });
   });
 });
